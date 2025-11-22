@@ -6,7 +6,7 @@ import 'package:camera/camera.dart';
 // GÖRSEL İŞLEME KÜTÜPHANESİ
 import 'package:image/image.dart' as img; 
 
-// WEB İNDİRME İŞLEMİ
+// WEB İNDİRME VE LİNK İŞLEMLERİ
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:html' as html; 
 
@@ -53,13 +53,8 @@ class _KabinEkraniState extends State<KabinEkrani> {
   List<XFile> capturedImages = []; 
   bool isShooting = false; 
   String? countdownText;
-  
-  // YENİ: Flaş Efekti için değişken
   bool showFlash = false;
-
-  // YENİ: Seçilen şerit rengi (Varsayılan Beyaz)
   Color selectedStripColor = Colors.white;
-  
   Uint8List? finalStripData; 
   bool isProcessing = false;
 
@@ -80,6 +75,13 @@ class _KabinEkraniState extends State<KabinEkrani> {
     });
   }
 
+  // --- YENİ EKLENEN FONKSİYON: DESTEK LİNKİ ---
+  void openSupportLink() {
+    // Buraya kendi BuyMeACoffee veya IBAN sayfanın linkini koyabilirsin
+    const url = 'https://www.buymeacoffee.com/'; 
+    html.window.open(url, '_blank');
+  }
+
   Future<void> startPhotobooth() async {
     setState(() {
       isShooting = true;
@@ -87,32 +89,23 @@ class _KabinEkraniState extends State<KabinEkrani> {
       finalStripData = null;
     });
 
-    // 3 Kere Fotoğraf Çekme Döngüsü
     for (int i = 0; i < 3; i++) {
-      // Geri Sayım
       for (int c = 3; c > 0; c--) {
         setState(() => countdownText = "$c");
         await Future.delayed(const Duration(seconds: 1));
       }
       
-      // EMOJİ YERİNE FLAŞ EFEKTİ ⚡
       setState(() {
-        countdownText = null; // Yazıyı kaldır
-        showFlash = true;     // Beyaz ekranı aç
+        countdownText = null;
+        showFlash = true;
       });
       
-      // 150 milisaniye bekle (Flaş süresi)
       await Future.delayed(const Duration(milliseconds: 150));
 
       try {
         final image = await controller!.takePicture();
         capturedImages.add(image);
-        
-        // Flaşı kapat ve önizlemeyi güncelle
-        setState(() {
-          showFlash = false; 
-        });
-        
+        setState(() { showFlash = false; });
       } catch (e) {
         print("Hata: $e");
       }
@@ -155,20 +148,17 @@ class _KabinEkraniState extends State<KabinEkrani> {
 
     img.Image stripCanvas = img.Image(width: totalWidth, height: totalHeight);
     
-    // YENİ: Kullanıcının seçtiği rengi burada kullanıyoruz
     img.fill(stripCanvas, color: img.ColorRgb8(
       selectedStripColor.red, 
       selectedStripColor.green, 
       selectedStripColor.blue
     ));
 
-    // Film Delikleri
     int holeWidth = 25;
     int holeHeight = 18;
     int holeMargin = 12; 
     int holeSpacing = 35; 
     
-    // Delik rengi (Eğer arka plan siyahsa delikler beyaz olsun, yoksa siyah)
     final holeColor = selectedStripColor == Colors.black 
         ? img.ColorRgb8(255, 255, 255) 
         : img.ColorRgb8(0, 0, 0);
@@ -185,14 +175,12 @@ class _KabinEkraniState extends State<KabinEkrani> {
           color: holeColor);
     }
 
-    // Fotoları yapıştır
     int currentY = border;
     for (var imgToDraw in loadedImages) {
       img.compositeImage(stripCanvas, imgToDraw, dstX: border, dstY: currentY);
       currentY += singleHeight + gap;
     }
 
-    // Tarih Damgası
     String dateText = "${DateTime.now().toString().substring(0, 10)}";
     img.BitmapFont font = img.arial24; 
     
@@ -200,7 +188,7 @@ class _KabinEkraniState extends State<KabinEkrani> {
         font: font, 
         x: border, 
         y: totalHeight - 60, 
-        color: holeColor); // Yazı rengi de delik rengiyle aynı olsun
+        color: holeColor);
 
     setState(() {
       finalStripData = img.encodeJpg(stripCanvas, quality: 95);
@@ -229,13 +217,12 @@ class _KabinEkraniState extends State<KabinEkrani> {
       appBar: AppBar(title: const Text("🎞️ Retro Start-Up Kabini")),
       body: Row(
         children: [
-          // SOL TARAF (KAMERA ve KONTROLLER)
+          // SOL TARAF
           Expanded(
             flex: 2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // KAMERA ALANI
                 Container(
                   width: 500,
                   height: 375,
@@ -248,12 +235,7 @@ class _KabinEkraniState extends State<KabinEkrani> {
                           alignment: Alignment.center,
                           children: [
                             CameraPreview(controller!),
-                            
-                            // FLAŞ KATMANI (Görünürse ekranı beyaz yapar)
-                            if (showFlash)
-                              Container(color: Colors.white),
-
-                            // GERİ SAYIM YAZISI
+                            if (showFlash) Container(color: Colors.white),
                             if (countdownText != null)
                               Text(
                                 countdownText!,
@@ -271,7 +253,6 @@ class _KabinEkraniState extends State<KabinEkrani> {
                 
                 const SizedBox(height: 20),
 
-                // RENK SEÇİCİ (Sadece çekim yapılmıyorken göster)
                 if (!isShooting && !isProcessing) ...[
                   const Text("Şerit Rengini Seç:", style: TextStyle(color: Colors.white70)),
                   const SizedBox(height: 10),
@@ -282,13 +263,12 @@ class _KabinEkraniState extends State<KabinEkrani> {
                       _colorOption(Colors.black),
                       _colorOption(Colors.pinkAccent),
                       _colorOption(Colors.blueAccent),
-                      _colorOption(const Color(0xFFFFF59D)), // Krem/Sarı
+                      _colorOption(const Color(0xFFFFF59D)), 
                     ],
                   ),
                   const SizedBox(height: 20),
                 ],
 
-                // BAŞLAT BUTONU
                 if (!isShooting && !isProcessing)
                   ElevatedButton.icon(
                     onPressed: startPhotobooth,
@@ -309,7 +289,7 @@ class _KabinEkraniState extends State<KabinEkrani> {
             ),
           ),
 
-          // SAĞ TARAF (SONUÇ)
+          // SAĞ TARAF
           Expanded(
             flex: 1,
             child: Container(
@@ -347,6 +327,7 @@ class _KabinEkraniState extends State<KabinEkrani> {
                   
                   const SizedBox(height: 20),
                   
+                  // İNDİRME BUTONU
                   if (finalStripData != null)
                     ElevatedButton.icon(
                       onPressed: downloadStripWeb,
@@ -358,6 +339,17 @@ class _KabinEkraniState extends State<KabinEkrani> {
                         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
                       ),
                     ),
+                  
+                  const SizedBox(height: 10),
+
+                  // --- İŞTE BURASI YENİ EKLENEN BUTON ---
+                  if (finalStripData != null)
+                    TextButton.icon(
+                      onPressed: openSupportLink, // Linki açan fonksiyon
+                      icon: const Icon(Icons.coffee_rounded, color: Colors.amber),
+                      label: const Text("Projeyi Destekle", style: TextStyle(color: Colors.amber)),
+                    ),
+                  
                   const SizedBox(height: 20),
                 ],
               ),
@@ -368,7 +360,6 @@ class _KabinEkraniState extends State<KabinEkrani> {
     );
   }
 
-  // Renk seçimi için yuvarlak buton widget'ı
   Widget _colorOption(Color color) {
     bool isSelected = selectedStripColor == color;
     return GestureDetector(
