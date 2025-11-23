@@ -78,7 +78,7 @@ class _KabinEkraniState extends State<KabinEkrani> {
   // --- YENİ EKLENEN FONKSİYON: DESTEK LİNKİ ---
   void openSupportLink() {
     // Buraya kendi BuyMeACoffee veya IBAN sayfanın linkini koyabilirsin
-    const url = 'https://www.buymeacoffee.com/'; 
+    const url = 'https://buymeacoffee.com/yusufardaersoy'; 
     html.window.open(url, '_blank');
   }
 
