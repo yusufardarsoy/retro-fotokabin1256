@@ -65089,7 +65089,7 @@ q=J.j(q,0)
 s=new A.E_(new A.Hb(B.Pu,r,r,r,!0),new A.uH(!1,!1,!1,!1,!1,!1,r,r,r,B.CS,B.iC,B.iI,!1,!1,B.eS,r,r,q),$.bf())
 this.d=s
 s.iA(q).bh(new A.aeb(this),t.P)},
-aad(){var s=window.open("https://www.buymeacoffee.com/","_blank")
+aad(){var s=window.open("https://buymeacoffee.com/yusufardaersoy","_blank")
 A.aDC(s)},
 kp(){var s=0,r=A.Q(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f
 var $async$kp=A.R(function(a,b){if(a===1){p.push(b)
